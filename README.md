@@ -1,10 +1,26 @@
 # ConvoLens
 
-**ConvoLens** is an AI-powered multilingual chatbot analytics project that combines a web dashboard, Django REST API, Rasa conversational AI, and sentiment-analysis capabilities to turn chatbot interactions into useful conversation insights.
+**ConvoLens** is an AI-powered multilingual chatbot analytics project that combines a static web dashboard, Django REST API, Rasa conversational AI, and sentiment-analysis capabilities.
 
-## Overview
+## Production architecture
 
-ConvoLens is designed to support chatbot interaction analysis through a lightweight frontend and a Python backend. The project includes multilingual conversational flows for English, Hindi, and Gujarati, feedback collection, analytics views, and Rasa custom actions.
+```text
+GitHub Pages frontend
+        |
+        | HTTPS
+        v
+Render Django API  <---->  Render PostgreSQL
+        |
+        | private network
+        v
+Render Rasa service
+        |
+        | private network
+        v
+Render Rasa actions
+```
+
+The repository includes a Render Blueprint in `render.yaml` for the Django API, Rasa service, Rasa action service, and PostgreSQL database. GitHub Pages remains the frontend host. Render web services provide public HTTPS endpoints and private services can communicate over Render's private network. citeturn2search0turn0search1
 
 ## Features
 
@@ -12,48 +28,28 @@ ConvoLens is designed to support chatbot interaction analysis through a lightwei
 - Symptom-reporting conversational flows
 - Clinic-search conversational flows
 - Medicine-information conversational flows
-- Custom Rasa actions
+- Rasa custom actions
 - Feedback collection through Django REST API
 - Interactive analytics dashboard
 - Chart.js-based data visualization
 - Bootstrap-based responsive frontend
 - Sentiment-analysis integration using Hugging Face inference
-- SQLite database for local development
+- PostgreSQL support for production
+- SQLite fallback for local development
+- Production health endpoint at `/health/`
 
 ## Technology Stack
 
 | Layer | Technology |
 |---|---|
-| Frontend | HTML, CSS, JavaScript |
+| Frontend | HTML, CSS, JavaScript, GitHub Pages |
 | UI | Bootstrap, Bootstrap Icons |
 | Charts | Chart.js |
-| Backend | Python, Django, Django REST Framework |
+| Backend | Python, Django, Django REST Framework, Gunicorn |
+| Production database | PostgreSQL |
 | Conversational AI | Rasa, Rasa SDK |
 | NLP | Hugging Face sentiment inference |
-| Database | SQLite |
-
-## Architecture
-
-```text
-Browser
-  |
-  +--> Frontend (HTML / CSS / JavaScript)
-  |
-  +--> Django REST API
-          |
-          +--> Feedback application
-          +--> SQLite (local development)
-
-Rasa service
-  |
-  +--> NLU / Stories / Rules / Domain
-  +--> Custom actions
-  +--> Multilingual conversation flows
-
-External AI integration
-  |
-  +--> Hugging Face sentiment inference
-```
+| Production hosting | Render |
 
 ## Repository Structure
 
@@ -63,6 +59,7 @@ ConvoLens/
 │   ├── conversationalytics_backend/
 │   ├── feedbackapp/
 │   ├── .env.example
+│   ├── build.sh
 │   ├── manage.py
 │   └── requirements.txt
 ├── frontend/
@@ -76,34 +73,27 @@ ConvoLens/
 │   ├── actions/
 │   ├── data/
 │   ├── tests/
+│   ├── Dockerfile
+│   ├── Dockerfile.actions
 │   ├── config.yml
 │   ├── credentials.yml
-│   ├── domain.yml
 │   ├── endpoints.yml
+│   ├── endpoints.production.yml
 │   └── rasa_requirements.txt
+├── render.yaml
 ├── LICENSE
 └── README.md
 ```
 
 > Note: the internal Django package is named `conversalytics_backend` for compatibility with the existing application source; the public project name is ConvoLens.
 
-## Prerequisites
+## Local development
 
-- Python 3.x
-- pip
-- A modern web browser
-- A compatible Rasa/Rasa SDK environment if the conversational service is required
-- Network access for any configured external Hugging Face inference service
-
-## Backend Setup
-
-1. Create a virtual environment:
+### Backend
 
 ```bash
 python -m venv .venv
 ```
-
-2. Activate it.
 
 Windows PowerShell:
 
@@ -117,87 +107,69 @@ macOS/Linux:
 source .venv/bin/activate
 ```
 
-3. Install Django dependencies:
+Install dependencies:
 
 ```bash
 pip install -r backend/requirements.txt
 ```
 
-4. Create the environment file:
-
-```text
-backend/.env.example -> backend/.env
-```
-
-5. Set secure values in `backend/.env`.
-
-6. Run migrations:
+Copy `backend/.env.example` to `backend/.env`, set secure values, then run:
 
 ```bash
 python backend/manage.py migrate
-```
-
-7. Start Django:
-
-```bash
 python backend/manage.py runserver
 ```
 
-## Frontend Setup
-
-Serve the `frontend` directory with a local static server. For example:
+### Frontend
 
 ```bash
 python -m http.server 5500 --directory frontend
 ```
 
-Then open the frontend in your browser.
+The frontend API bridge defaults to the production Render API URL and can be overridden by defining `window.CONVOLENS_API_BASE` before `script.js`.
 
-## Rasa Setup
+### Rasa
 
-The Rasa source is stored in the `rasa/` directory. Install a Rasa version compatible with the supplied project configuration and dependencies, then run the Rasa services from that directory.
+The supplied Rasa environment is legacy and is isolated in Docker for production deployment. The current dependency file pins Rasa 2.8.x-era packages, which require an older compatible Python runtime. Rasa's legacy documentation states that Rasa 2.x supports Python 3.7/3.8, while current Rasa documentation covers newer supported runtimes. citeturn1search8turn1search0
 
-Because the included dependency specification is based on an older Rasa environment, dependency compatibility should be verified before attempting a fresh training run on a modern Python installation.
+Before claiming a fully production-verified Rasa deployment, the Rasa stack should be upgraded and tested against a currently supported release. Rasa 2.8.x is also past its published technical-support window. citeturn1search7
 
-## Environment Variables
+## Production deployment
 
-The backend example configuration supports:
+The recommended production platform for this repository is Render. Render supports Django web services, Docker services, private services, and managed PostgreSQL databases. citeturn0search0turn0search3turn0search4
+
+1. Open the Render dashboard and connect the GitHub repository.
+2. Create a Blueprint from `render.yaml`.
+3. Configure the production secrets in Render's environment settings.
+4. Use a paid PostgreSQL plan for persistent production data. Render explicitly warns that free Postgres is limited, has a 30-day lifetime, and should not be used for production applications. citeturn2search2
+5. Deploy the Django API and verify `https://convolens-api.onrender.com/health/` returns a healthy response.
+6. Deploy the Rasa and action services and verify the Django `/api/chat/` proxy can reach Rasa over Render's private network.
+7. GitHub Pages will use `https://convolens-api.onrender.com` through the frontend API bridge.
+
+Render web services receive an HTTPS `onrender.com` URL, and Render services in the same region can communicate over the private network. citeturn0search1
+
+## Environment variables
 
 | Variable | Purpose |
 |---|---|
-| `DJANGO_SECRET_KEY` | Django secret key |
-| `DJANGO_DEBUG` | Development debug flag |
-| `DJANGO_ALLOWED_HOSTS` | Allowed Django hosts |
-| `CORS_ALLOWED_ORIGINS` | Frontend origins allowed by CORS |
-| `FEEDBACK_ADMIN_KEY` | Protected feedback/analytics administration key |
+| `DJANGO_SECRET_KEY` | Production Django secret |
+| `DJANGO_DEBUG` | Must be `false` in production |
+| `DJANGO_ALLOWED_HOSTS` | Allowed backend hosts |
+| `CORS_ALLOWED_ORIGINS` | GitHub Pages frontend origin |
+| `CSRF_TRUSTED_ORIGINS` | Trusted HTTPS origins |
+| `FEEDBACK_ADMIN_KEY` | Protected feedback/analytics key |
+| `RASA_REST_URL` | Internal Rasa REST endpoint |
+| `DATABASE_URL` | PostgreSQL connection URL |
 
-Never commit the real `.env` file or production credentials.
+Never commit real production credentials.
 
-## Testing Status
+## Testing
 
-Static source and configuration validation was performed during project cleanup. Full end-to-end runtime validation requires installing the project's Python dependencies and running the Django/Rasa services with their required external integrations.
+The Django CI workflow installs dependencies, runs migrations, executes Django checks, and runs the test suite. Production deployment still requires end-to-end validation of the Rasa runtime, external Hugging Face inference, and the deployed service-to-service network.
 
-The original project environment was not considered fully reproducible without dependency installation, so this repository does **not** claim that every live chatbot and external AI flow has been verified in the current environment.
+## Important production note
 
-## Security
-
-The repository excludes local environment files, databases, logs, caches, generated Rasa artifacts, trained model archives, and other development-only files through `.gitignore`. Runtime secrets should be supplied through environment variables.
-
-## Limitations
-
-- Rasa dependency versions are from an older project environment and may require a compatible Python/runtime setup.
-- Hugging Face sentiment inference requires the configured external service/model access.
-- SQLite is intended for local development rather than production-scale deployment.
-- Frontend pages are served as static files and require the backend/Rasa services to be running for connected functionality.
-
-## Future Improvements
-
-- Add automated CI tests for backend and Rasa validation
-- Add production database support
-- Containerize Django and Rasa services
-- Add authentication and role-based access control
-- Improve automated analytics and conversation reporting
-- Add deployment documentation and production configuration
+The infrastructure configuration is now prepared, but this repository should **not** claim that the complete Rasa production stack is live until the legacy Rasa dependency/configuration compatibility has been verified on the target runtime. This distinction keeps the project resume-ready without overstating deployment status.
 
 ## License
 
