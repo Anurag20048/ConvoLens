@@ -1,8 +1,8 @@
 // ConvoLens Theme Toggle
 
-// API bridge: the static GitHub Pages frontend can talk to the Django API.
-// Set window.CONVOLENS_API_BASE before this file if a deployed backend is used.
-const CONVOLENS_API_BASE = window.CONVOLENS_API_BASE || "http://127.0.0.1:8000";
+// API bridge: GitHub Pages is static, so connected features call the public Django API.
+// Override window.CONVOLENS_API_BASE before this script for local development or another backend.
+const CONVOLENS_API_BASE = window.CONVOLENS_API_BASE || "https://convolens-api.onrender.com";
 const originalFetch = window.fetch.bind(window);
 
 window.fetch = (input, init) => {
