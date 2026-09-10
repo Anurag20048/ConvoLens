@@ -1,0 +1,84 @@
+version: "3.1"
+
+stories:
+
+- story: happy path
+  steps:
+  - intent: greet
+  - action: utter_greet
+  - intent: mood_great
+  - action: utter_happy
+
+- story: sad path 1
+  steps:
+  - intent: greet
+  - action: utter_greet
+  - intent: mood_unhappy
+  - action: utter_cheer_up
+  - action: utter_did_that_help
+  - intent: affirm
+  - action: utter_happy
+
+- story: sad path 2
+  steps:
+  - intent: greet
+  - action: utter_greet
+  - intent: mood_unhappy
+  - action: utter_cheer_up
+  - action: utter_did_that_help
+  - intent: deny
+  - action: utter_goodbye
+
+- story: report_symptom
+  steps:
+  - intent: report_symptom
+  - action: utter_report_symptom
+  - action: action_report_symptom
+
+- story: report_symptom_hindi
+  steps:
+  - intent: report_symptom_hindi
+  - action: utter_report_symptom_hindi
+  - action: action_report_symptom_hindi
+
+- story: report_symptom_gujarati
+  steps:
+  - intent: report_symptom_gujarati
+  - action: utter_report_symptom_gujarati
+  - action: action_report_symptom_gujarati
+
+- story: find_clinic
+  steps:
+  - intent: find_clinic
+  - action: utter_find_clinic
+  - action: action_find_clinic
+
+- story: find_clinic_hindi
+  steps:
+  - intent: find_clinic_hindi
+  - action: utter_find_clinic_hindi
+  - action: action_find_clinic_hindi
+
+- story: find_clinic_gujarati
+  steps:
+  - intent: find_clinic_gujarati
+  - action: utter_find_clinic_gujarati
+  - action: action_find_clinic_gujarati
+
+- story: ask_medicine_info
+  steps:
+  - intent: ask_medicine_info
+  - action: utter_ask_medicine_info
+  - action: action_ask_medicine_info
+
+- story: ask_medicine_info_hindi
+  steps:
+  - intent: ask_medicine_info_hindi
+  - action: utter_ask_medicine_info_hindi
+  - action: action_ask_medicine_info_hindi
+
+- story: ask_medicine_info_gujarati
+  steps:
+  - intent: ask_medicine_info_gujarati
+  - action: utter_ask_medicine_info_gujarati
+  - action: action_ask_medicine_info_gujarati
