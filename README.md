@@ -56,7 +56,7 @@ The repository includes a Render Blueprint in `render.yaml` for the Django API, 
 ```text
 ConvoLens/
 ├── backend/
-│   ├── conversationalytics_backend/
+│   ├── conversalytics_backend/
 │   ├── feedbackapp/
 │   ├── .env.example
 │   ├── build.sh
