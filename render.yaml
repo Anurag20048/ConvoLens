@@ -1,0 +1,52 @@
+services:
+  - type: web
+    name: convolens-api
+    runtime: python
+    region: singapore
+    plan: 0.5c-512mb
+    buildCommand: cd backend && pip install -r requirements.txt && ./build.sh
+    preDeployCommand: cd backend && python manage.py migrate --no-input
+    startCommand: cd backend && gunicorn conversalytics_backend.wsgi:application --bind 0.0.0.0:$PORT
+    healthCheckPath: /health/
+    envVars:
+      - key: DJANGO_SECRET_KEY
+        generateValue: true
+      - key: DJANGO_DEBUG
+        value: "false"
+      - key: DJANGO_ALLOWED_HOSTS
+        value: ".onrender.com"
+      - key: CORS_ALLOWED_ORIGINS
+        value: "https://anurag20048.github.io"
+      - key: CSRF_TRUSTED_ORIGINS
+        value: "https://anurag20048.github.io"
+      - key: FEEDBACK_ADMIN_KEY
+        generateValue: true
+      - key: RASA_REST_URL
+        value: "http://convolens-rasa:10000/webhooks/rest/webhook"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: convolens-db
+          property: connectionString
+
+  - type: pserv
+    name: convolens-rasa
+    runtime: docker
+    region: singapore
+    plan: 1c-2g
+    dockerfilePath: ./rasa/Dockerfile
+    dockerContext: .
+
+  - type: pserv
+    name: convolens-actions
+    runtime: docker
+    region: singapore
+    plan: 0.5c-512mb
+    dockerfilePath: ./rasa/Dockerfile.actions
+    dockerContext: .
+
+databases:
+  - name: convolens-db
+    region: singapore
+    plan: 0.5c-1g
+    databaseName: convolens
+    user: convolens
