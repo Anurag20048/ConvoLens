@@ -17,4 +17,4 @@ COPY rasa/ ./
 RUN rasa train
 
 EXPOSE 10000
-CMD ["sh", "-c", "rasa run --enable-api --cors '*' --port ${PORT:-10000} --endpoints endpoints.yml --credentials credentials.yml"]
+CMD ["sh", "-c", "rasa run --enable-api --cors '*' --port ${PORT:-10000} --endpoints endpoints.production.yml --credentials credentials.yml"]
