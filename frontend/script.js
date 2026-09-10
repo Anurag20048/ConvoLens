@@ -1,5 +1,25 @@
 // ConvoLens Theme Toggle
 
+// API bridge: the static GitHub Pages frontend can talk to the Django API.
+// Set window.CONVOLENS_API_BASE before this file if a deployed backend is used.
+const CONVOLENS_API_BASE = window.CONVOLENS_API_BASE || "http://127.0.0.1:8000";
+const originalFetch = window.fetch.bind(window);
+
+window.fetch = (input, init) => {
+  const url = typeof input === "string" ? input : input?.url;
+  if (!url) return originalFetch(input, init);
+
+  if (url === "http://localhost:5005/webhooks/rest/webhook") {
+    return originalFetch(`${CONVOLENS_API_BASE}/api/chat/`, init);
+  }
+
+  if (url === "http://127.0.0.1:8000/api/feedback/") {
+    return originalFetch(`${CONVOLENS_API_BASE}/api/feedback/`, init);
+  }
+
+  return originalFetch(input, init);
+};
+
 document.addEventListener("DOMContentLoaded", () => {
   const body = document.body;
   const toggleBtn = document.getElementById("theme-toggle");
