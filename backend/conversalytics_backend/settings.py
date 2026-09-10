@@ -81,3 +81,7 @@ CORS_ALLOWED_ORIGINS = [
 ]
 
 FEEDBACK_ADMIN_KEY = os.getenv("FEEDBACK_ADMIN_KEY", "change-me-in-production")
+RASA_REST_URL = os.getenv(
+    "RASA_REST_URL",
+    "http://127.0.0.1:5005/webhooks/rest/webhook",
+)
