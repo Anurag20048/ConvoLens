@@ -1,3 +1,5 @@
+[![CI](https://github.com/Anurag20048/ConvoLens/actions/workflows/ci.yml/badge.svg)](https://github.com/Anurag20048/ConvoLens/actions/workflows/ci.yml)
+
 # ConvoLens
 
 **ConvoLens** is an AI-powered multilingual chatbot analytics project that combines a static web dashboard, Django REST API, Rasa conversational AI, and sentiment-analysis capabilities.
